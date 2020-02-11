@@ -16,5 +16,4 @@ libh5lz4_la_LDFLAGS = -version-info 0:0:0
 # The libh5lz4 library for plugin module.
 # Build it as shared library.
 plugin_LTLIBRARIES = libh5lz4.la
-libh5lz4_la_SOURCES = H5Zlz4.c
-
+libh5lz4_la_SOURCES = H5Zlz4.c H5Zlz4_shared.c

@@ -45,6 +45,8 @@
 #include <Winsock2.h>
 #endif
 
+#include <arpa/inet.h>
+
 #include "H5PLextern.h"
 #include "lz4.h"
 
@@ -67,28 +69,26 @@ size_t H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts,
 
 #define DEFAULT_BLOCK_SIZE 1<<30; /* 1GB. LZ4 needs blocks < 1.9GB. */
 
-const H5Z_class2_t H5Z_LZ4[1] = {{
-        H5Z_CLASS_T_VERS,       /* H5Z_class_t version */
-        (H5Z_filter_t)H5Z_FILTER_LZ4,         /* Filter id number             */
-#ifdef FILTER_DECODE_ONLY
-    0,                   /* encoder_present flag (false is not available) */
-#else
-    1,                   /* encoder_present flag (set to true) */
-#endif
-        1,              /* decoder_present flag (set to true) */
-        "HDF5 lz4 filter; see http://www.hdfgroup.org/services/contributions.html",
-        /* Filter name for debugging    */
-        NULL,                       /* The "can apply" callback     */
-        NULL,                       /* The "set local" callback     */
-        (H5Z_func_t)H5Z_filter_lz4,         /* The actual filter function   */
-}};
+/* const H5Z_class2_t H5Z_LZ4[1] = {{ */
+/*         H5Z_CLASS_T_VERS,       /\* H5Z_class_t version *\/ */
+/*         (H5Z_filter_t)H5Z_FILTER_LZ4,         /\* Filter id number             *\/ */
+/* #ifdef FILTER_DECODE_ONLY */
+/*     0,                   /\* encoder_present flag (false is not available) *\/ */
+/* #else */
+/*     1,                   /\* encoder_present flag (set to true) *\/ */
+/* #endif */
+/*         1,              /\* decoder_present flag (set to true) *\/ */
+/*         "HDF5 lz4 filter; see http://www.hdfgroup.org/services/contributions.html", */
+/*         /\* Filter name for debugging    *\/ */
+/*         NULL,                       /\* The "can apply" callback     *\/ */
+/*         NULL,                       /\* The "set local" callback     *\/ */
+/*         (H5Z_func_t)H5Z_filter_lz4,         /\* The actual filter function   *\/ */
+/* }}; */
 
-H5PL_type_t   H5PLget_plugin_type(void) {return H5PL_TYPE_FILTER;}
-const void *H5PLget_plugin_info(void) {return H5Z_LZ4;}
-
-size_t H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts,
-        const unsigned int cd_values[], size_t nbytes,
-        size_t *buf_size, void **buf)
+size_t
+H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts,
+               const unsigned int cd_values[], size_t nbytes,
+               size_t *buf_size, void **buf)
 {
     void * outBuf = NULL;
     size_t ret_value;
@@ -134,7 +134,8 @@ size_t H5Z_filter_lz4(unsigned int flags, size_t cd_nelmts,
             else /* do the decompression */
             {
 #if LZ4_VERSION_NUMBER > 10300
-                int compressedBytes = LZ4_decompress_fast(rpos, roBuf, blockSize);
+                /* int compressedBytes = LZ4_decompress_fast(rpos, roBuf, blockSize); */
+                int compressedBytes = LZ4_decompress_safe(rpos, roBuf, blockSize, blockSize);
 #else
                 int compressedBytes = LZ4_uncompress(rpos, roBuf, blockSize);
 #endif
